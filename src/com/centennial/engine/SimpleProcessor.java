@@ -1,9 +1,16 @@
 package com.centennial.engine;
 
-// Implements the interface with a simple business rule.
+import java.sql.SQLException;
+
+// Implements the interface: checks a rule, then saves to the database.
 public class SimpleProcessor implements ITransactionProcessor {
 
     private static final double MAX_AMOUNT = 5000.00;
+    private final DatabaseService database;
+
+    public SimpleProcessor(DatabaseService database) {
+        this.database = database;
+    }
 
     @Override
     public void process(Transaction transaction) throws InsufficientFundsException {
@@ -12,6 +19,11 @@ public class SimpleProcessor implements ITransactionProcessor {
             throw new InsufficientFundsException(
                 "Amount too large for " + transaction.getId());
         }
-        System.out.println("Processed: " + transaction);
+        try {
+            database.save(transaction);
+            System.out.println("Saved: " + transaction);
+        } catch (SQLException e) {
+            System.out.println("Database error: " + e.getMessage());
+        }
     }
 }
